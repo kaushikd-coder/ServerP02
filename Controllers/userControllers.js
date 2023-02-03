@@ -38,8 +38,25 @@ exports.userpost = async (req, res, next) => {
 
 //getting the user Details
 exports.userget = async (req, res, next) => {
+
+        const search = req.query.search || "";
+        const gender = req.query.gender || "";
+        const status = req.query.status || "";
+        const sort = req.query.sort || "";
+        const regex = {
+            fname: { 
+                $regex: search, $options: "i" 
+            },
+        }
+        if (gender !== "All") {
+            regex.gender = gender
+        }
+        if (status !== "All") {
+            regex.status = status
+        }
     try {
-        const userData = await User.find();
+        const userData = await User.find(regex)
+        .sort({datecreated: sort === "new" ? -1 : 1});
         res.status(200).json({ userData });
     } catch (error) {
         res.status(500).json({
@@ -87,6 +104,20 @@ exports.userDelete = async(req, res, next) => {
     try {
         const deleteUser = await User.findByIdAndDelete({ _id: id });
         res.status(200).json({ deleteUser });
+    } catch (error) {
+        res.status(500).json({
+            message: `Something went wrong${error}`
+        })
+    }
+}
+
+exports.userStatus = async(req, res, next) => {
+    const { id } = req.params;
+    const data = req.body;
+
+    try {
+        const userStatusUpdate = await User.findByIdAndUpdate({ _id: id }, {status: data}, {new: true});
+        res.status(200).json({ userStatusUpdate });
     } catch (error) {
         res.status(500).json({
             message: `Something went wrong${error}`
