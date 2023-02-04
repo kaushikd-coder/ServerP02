@@ -11,5 +11,7 @@ router.get("/user/:id", userController.singleuserget)
 router.patch("/user/edit/:id",upload.single("user_profile"),userController.useredit);
 router.delete("/user/delete/:id",userController.userDelete);
 router.put("/user/status/:id",userController.userStatus);
+router.get("/userexports",userController.userExport);
+
 
 module.exports = router;
