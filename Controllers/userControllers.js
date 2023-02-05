@@ -46,6 +46,9 @@ exports.userget = async (req, res, next) => {
     const gender = req.query.gender || "";
     const status = req.query.status || "";
     const sort = req.query.sort || "";
+    const page = req.query.page || 1;
+    const ITEM_PER_PAGE = 4;
+
     const regex = {
         fname: {
             $regex: search, $options: "i"
@@ -58,9 +61,23 @@ exports.userget = async (req, res, next) => {
         regex.status = status
     }
     try {
+
+        const skip = (page - 1) * ITEM_PER_PAGE;
+        const count = await User.countDocuments(regex);
+
         const userData = await User.find(regex)
-            .sort({ datecreated: sort === "new" ? -1 : 1 });
-        res.status(200).json({ userData });
+            .sort({ datecreated: sort === "new" ? -1 : 1 })
+            .limit(ITEM_PER_PAGE)
+            .skip(skip);
+
+            const pageCount = Math.ceil(count / ITEM_PER_PAGE);
+        
+            res.status(200).json({
+                Pagination:{
+                    count, pageCount
+                },
+                userData
+            })
     } catch (error) {
         res.status(500).json({
             message: "Something went wrong"
